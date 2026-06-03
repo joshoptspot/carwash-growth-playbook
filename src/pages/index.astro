@@ -1,0 +1,233 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import EpisodeCard from '../components/EpisodeCard.astro';
+import { getCollection } from 'astro:content';
+
+const episodes = (await getCollection('episodes')).sort(
+  (a, b) => b.data.episodeNumber - a.data.episodeNumber
+);
+
+const latestEpisode = episodes[0];
+const restEpisodes = episodes.slice(1);
+
+const latestDate = latestEpisode.data.date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Base
+  title="Car Wash Marketing Ideas & Strategies | The Car Wash Growth Playbook"
+  description="Get proven car wash marketing ideas and strategies from The Car Wash Growth Playbook podcast. Josh Taylor and the OptSpot team share what actually works to grow car wash membership revenue."
+  canonicalPath="/"
+>
+  <Fragment slot="head">
+    <link rel="preload" as="image" href="/cover-wide.jpg" />
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "PodcastSeries",
+      "name": "The Car Wash Growth Playbook",
+      "description": "Car wash marketing ideas, strategies, and operator growth playbooks for car wash business owners.",
+      "url": "https://carwashgrowthplaybook.com",
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://carwashgrowthplaybook.com/cover-square.jpg",
+        "width": 1080,
+        "height": 1080
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Josh Taylor"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "OptSpot",
+        "url": "https://optspot.com"
+      },
+      "inLanguage": "en-US",
+      "keywords": "car wash marketing, car wash marketing ideas, car wash marketing strategies, car wash membership growth, car wash business"
+    })} />
+  </Fragment>
+
+  <Nav variant="home" />
+
+  <!-- Hero: dark, cinematic -->
+  <section class="pt-[52px]">
+    <div class="relative overflow-hidden">
+      <img
+        src="/cover-wide.jpg"
+        alt="The Car Wash Growth Playbook — Car wash marketing podcast by OptSpot"
+        class="w-full object-cover object-center"
+        style="max-height: 480px;"
+        fetchpriority="high"
+        loading="eager"
+        width="1920"
+        height="1080"
+      />
+      <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent"></div>
+    </div>
+  </section>
+
+  <!-- Subscribe strip: light -->
+  <section class="bg-white border-b border-gray-200 py-7 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-5">
+      <div>
+        <h1 class="font-display text-2xl tracking-wider text-[#0a2430] mb-0.5">THE CAR WASH GROWTH PLAYBOOK</h1>
+        <p class="text-[#19c4d8] text-xs uppercase tracking-widest font-semibold mb-1">An OptSpot Podcast</p>
+        <p class="text-gray-600 text-sm">Actionable car wash marketing ideas, strategies, and operator growth playbooks. New episodes weekly.</p>
+      </div>
+      <div class="flex items-center gap-3 shrink-0 flex-wrap">
+        <a
+          href="https://open.spotify.com/show/4ZtAHnCtlILanAMSypKxuZ"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#1DB954] text-black text-sm font-semibold hover:opacity-90 transition"
+        >
+          Listen on Spotify
+        </a>
+        <a
+          href="https://www.youtube.com/playlist?list=PLmW8Eb6a0_CsXiUiBiaP17g20rxl3yHLi"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-red-600 text-white text-sm font-semibold hover:opacity-90 transition"
+        >
+          Watch on YouTube
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- OptSpot CTA: off-white -->
+  <section class="bg-gray-50 border-b border-gray-200 py-12 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8">
+      <div class="flex-1">
+        <p class="text-[#19c4d8] text-xs uppercase tracking-widest font-bold mb-2">Powered by OptSpot</p>
+        <p class="text-[#0a2430] font-bold text-lg md:text-xl mb-2">
+          Your strategic marketing partner, built exclusively for car washes.
+        </p>
+        <p class="text-gray-500 text-sm leading-relaxed">
+          OptSpot is a full-service, done-with-you agency serving 1,500+ car wash locations. We handle the strategy and execution so you can focus on running your business.
+        </p>
+      </div>
+      <a
+        href="https://optspot.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 inline-flex items-center gap-2 px-8 py-4 bg-[#e9e71e] text-[#0a2430] font-bold rounded-full hover:opacity-90 transition text-sm"
+      >
+        Visit OptSpot.com &rarr;
+      </a>
+    </div>
+  </section>
+
+  <!-- Episodes: white -->
+  <main class="bg-white max-w-6xl mx-auto px-6 py-14">
+
+    <!-- Featured latest episode -->
+    <div class="mb-14">
+      <div class="flex items-center gap-4 mb-6">
+        <span class="text-[#19c4d8] text-xs font-bold uppercase tracking-widest">Latest Episode</span>
+        <div class="h-px flex-1 bg-gray-200"></div>
+      </div>
+
+      <a
+        href={`/episodes/${latestEpisode.slug}`}
+        class="group block bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg hover:border-[#19c4d8]/40 transition-all duration-200"
+      >
+        <div class="md:grid md:grid-cols-[55%_1fr]">
+          <div class="relative aspect-video overflow-hidden bg-gray-100">
+            {latestEpisode.data.youtubeId ? (
+              <img
+                src={`https://img.youtube.com/vi/${latestEpisode.data.youtubeId}/maxresdefault.jpg`}
+                onerror={`this.onerror=null;this.src='https://img.youtube.com/vi/${latestEpisode.data.youtubeId}/hqdefault.jpg'`}
+                alt={latestEpisode.data.title}
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            ) : (
+              <img src="/cover-wide.jpg" alt={latestEpisode.data.title} class="w-full h-full object-cover" />
+            )}
+            <div class="absolute top-4 left-4">
+              <span class="bg-[#e9e71e] text-[#0a2430] text-xs font-bold px-3 py-1.5 rounded tracking-wide">
+                EP {String(latestEpisode.data.episodeNumber).padStart(3, '0')}
+              </span>
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20">
+              <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-xl">
+                <svg class="w-6 h-6 text-[#0a2430] ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="p-8 md:p-10 flex flex-col justify-center">
+            <time class="text-gray-400 text-xs mb-3 block">{latestDate}</time>
+            <h3 class="text-[#0a2430] font-bold text-xl md:text-2xl leading-snug mb-3 group-hover:text-[#19c4d8] transition-colors">
+              {latestEpisode.data.title}
+            </h3>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6 line-clamp-3">
+              {latestEpisode.data.description}
+            </p>
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#19c4d8] text-white text-sm font-semibold">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Watch Now
+              </span>
+              {latestEpisode.data.spotifyEpisodeId && (
+                <span class="text-gray-400 text-sm">Also on Spotify</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- All Episodes -->
+    <div>
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="font-display text-3xl tracking-wider text-[#0a2430]">ALL EPISODES</h2>
+        <span class="text-gray-400 text-xs">{episodes.length} episodes</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {restEpisodes.map((episode) => <EpisodeCard episode={episode} />)}
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer CTA: dark -->
+  <div class="bg-[#0a2430] py-14 px-6 text-center">
+    <p class="text-white/50 text-xs uppercase tracking-widest mb-3">Ready to grow your car wash?</p>
+    <p class="text-white font-bold text-xl md:text-2xl mb-6 max-w-lg mx-auto leading-snug">
+      Put these strategies to work with OptSpot.
+    </p>
+    <a
+      href="https://optspot.com"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center gap-2 px-8 py-4 bg-[#e9e71e] text-[#0a2430] font-bold rounded-full hover:opacity-90 transition text-sm"
+    >
+      Learn More at OptSpot.com &rarr;
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-[#0a2430] border-t border-white/10 py-10 px-6 text-center">
+    <a href="/" class="inline-block mb-4">
+      <img src="/cover-square.jpg" alt="The Car Wash Growth Playbook" class="w-14 h-14 rounded-xl mx-auto" />
+    </a>
+    <p class="font-display text-base tracking-wider text-[#19c4d8]">THE CAR WASH GROWTH PLAYBOOK</p>
+    <p class="text-white/40 text-xs mt-1">An OptSpot Podcast</p>
+    <div class="flex items-center justify-center gap-5 mt-5">
+      <a href="https://open.spotify.com/show/4ZtAHnCtlILanAMSypKxuZ" target="_blank" rel="noopener noreferrer" class="text-white/40 text-xs hover:text-white transition">Spotify</a>
+      <span class="text-white/20">|</span>
+      <a href="https://www.youtube.com/playlist?list=PLmW8Eb6a0_CsXiUiBiaP17g20rxl3yHLi" target="_blank" rel="noopener noreferrer" class="text-white/40 text-xs hover:text-white transition">YouTube</a>
+      <span class="text-white/20">|</span>
+      <a href="https://optspot.com" target="_blank" rel="noopener noreferrer" class="text-white/40 text-xs hover:text-white transition">OptSpot.com</a>
+    </div>
+    <p class="text-white/20 text-xs mt-6">&copy; {new Date().getFullYear()} OptSpot. All rights reserved.</p>
+  </footer>
+</Base>

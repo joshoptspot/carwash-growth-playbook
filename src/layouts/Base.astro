@@ -1,0 +1,87 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonicalPath?: string;
+}
+
+const {
+  title = 'Car Wash Marketing Ideas & Strategies | The Car Wash Growth Playbook',
+  description = 'Get proven car wash marketing ideas and strategies from The Car Wash Growth Playbook podcast. Josh Taylor and the OptSpot team share what actually works to grow car wash membership revenue.',
+  ogImage = '/cover-wide.jpg',
+  canonicalPath,
+} = Astro.props;
+
+const site = 'https://carwashgrowthplaybook.com';
+const canonical = canonicalPath
+  ? `${site}${canonicalPath}`
+  : `${site}${Astro.url.pathname}`;
+const ogImageFull = `${site}${ogImage}`;
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageFull} />
+    <meta property="og:image:width" content="1920" />
+    <meta property="og:image:height" content="1080" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="The Car Wash Growth Playbook" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageFull} />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpeg" href="/cover-square.jpg" />
+
+    <!-- RSS -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="The Car Wash Growth Playbook"
+      href={`${site}/rss.xml`}
+    />
+
+    <!-- Fonts: non-render-blocking -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
+
+    <!-- Extra head content per page (JSON-LD, preloads, etc.) -->
+    <slot name="head" />
+  </head>
+  <body class="bg-white text-[#0a2430] min-h-screen font-sans antialiased">
+    <slot />
+  </body>
+</html>

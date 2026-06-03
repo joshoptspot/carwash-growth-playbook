@@ -1,0 +1,154 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  episode: CollectionEntry<'episodes'>;
+}
+
+const { episode } = Astro.props;
+const { title, episodeNumber, date, description, youtubeId, spotifyEpisodeId, duration } =
+  episode.data;
+const slug = episode.slug;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+
+const thumbnailUrl = youtubeId
+  ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
+  : '/cover-square.jpg';
+
+const thumbnailFallback = youtubeId
+  ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`
+  : '/cover-square.jpg';
+---
+
+<div
+  class="episode-card group flex flex-col bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md hover:border-[#19c4d8]/50 transition-all duration-200"
+  data-youtube={youtubeId}
+  data-spotify={spotifyEpisodeId}
+>
+  <!-- Thumbnail -->
+  <div class="relative overflow-hidden bg-gray-100 aspect-video shrink-0">
+    <img
+      src={thumbnailUrl}
+      onerror={`this.onerror=null;this.src='${thumbnailFallback}'`}
+      alt={title}
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      loading="lazy"
+    />
+
+    <div class="absolute top-3 left-3">
+      <span class="bg-[#e9e71e] text-[#0a2430] text-xs font-bold px-2.5 py-1 rounded tracking-wide">
+        EP {String(episodeNumber).padStart(3, '0')}
+      </span>
+    </div>
+
+    {youtubeId && (
+      <button
+        data-action="youtube"
+        aria-label="Watch episode"
+        class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/20"
+      >
+        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg">
+          <svg class="w-4 h-4 text-[#0a2430] ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </button>
+    )}
+
+    {!youtubeId && spotifyEpisodeId && (
+      <div class="absolute bottom-3 right-3">
+        <span class="bg-[#1DB954] text-black text-xs font-bold px-2 py-1 rounded">Spotify Only</span>
+      </div>
+    )}
+  </div>
+
+  <!-- Card body -->
+  <div class="flex flex-col flex-1 p-5">
+    <div class="flex items-center gap-2 mb-2">
+      <time class="text-gray-400 text-xs">{formattedDate}</time>
+      {duration && <span class="text-gray-400 text-xs">&middot; {duration}</span>}
+    </div>
+
+    <a href={`/episodes/${slug}`} class="group/title flex-1">
+      <h3 class="text-[#0a2430] font-bold text-sm leading-snug mb-2 group-hover/title:text-[#19c4d8] transition-colors line-clamp-2">
+        {title}
+      </h3>
+    </a>
+
+    <p class="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-4">{description}</p>
+
+    <div class="flex items-center gap-2 mt-auto flex-wrap">
+      {youtubeId && (
+        <button
+          data-action="youtube"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#19c4d8] text-white text-xs font-semibold hover:opacity-90 transition"
+        >
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          Watch
+        </button>
+      )}
+      {spotifyEpisodeId && (
+        <button
+          data-action="spotify"
+          class={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold hover:opacity-90 transition ${youtubeId ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-[#1DB954] text-black'}`}
+        >
+          {youtubeId ? 'Spotify' : 'Listen on Spotify'}
+        </button>
+      )}
+      <a
+        href={`/episodes/${slug}`}
+        class="ml-auto text-gray-400 text-xs hover:text-[#19c4d8] transition"
+      >
+        Notes &rarr;
+      </a>
+    </div>
+  </div>
+
+  <!-- Embed (lazy) -->
+  <div class="embed-container hidden border-t border-gray-200">
+    <iframe
+      class="embed-frame w-full block"
+      src=""
+      frameborder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.episode-card').forEach((card) => {
+    const watchBtns = card.querySelectorAll<HTMLButtonElement>('[data-action="youtube"]');
+    const spotifyBtn = card.querySelector<HTMLButtonElement>('[data-action="spotify"]');
+    const container = card.querySelector<HTMLElement>('.embed-container');
+    const iframe = container?.querySelector<HTMLIFrameElement>('.embed-frame');
+
+    function showEmbed(type: 'youtube' | 'spotify') {
+      if (!iframe || !container) return;
+      const youtubeId = card.dataset.youtube;
+      const spotifyId = card.dataset.spotify;
+
+      container.classList.remove('hidden');
+
+      if (type === 'youtube' && youtubeId) {
+        iframe.style.height = '280px';
+        iframe.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
+      } else if (type === 'spotify' && spotifyId) {
+        iframe.style.height = '152px';
+        iframe.src = `https://open.spotify.com/embed/episode/${spotifyId}?utm_source=generator`;
+      }
+
+      setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+    }
+
+    watchBtns.forEach((btn) => btn.addEventListener('click', () => showEmbed('youtube')));
+    spotifyBtn?.addEventListener('click', () => showEmbed('spotify'));
+  });
+</script>

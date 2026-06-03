@@ -1,0 +1,252 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+
+export async function getStaticPaths() {
+  const episodes = await getCollection('episodes');
+  return episodes.map((episode) => ({
+    params: { slug: episode.slug },
+    props: { episode },
+  }));
+}
+
+const { episode } = Astro.props;
+const { title, episodeNumber, date, description, youtubeId, spotifyEpisodeId, duration, guest } =
+  episode.data;
+
+const { Content } = await render(episode);
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const allEpisodes = (await getCollection('episodes')).sort(
+  (a, b) => a.data.episodeNumber - b.data.episodeNumber
+);
+const currentIndex = allEpisodes.findIndex((e) => e.slug === episode.slug);
+const prevEpisode = currentIndex > 0 ? allEpisodes[currentIndex - 1] : null;
+const nextEpisode = currentIndex < allEpisodes.length - 1 ? allEpisodes[currentIndex + 1] : null;
+---
+
+<Base
+  title={`${title} | Car Wash Marketing Podcast — The Car Wash Growth Playbook`}
+  description={`${description} From The Car Wash Growth Playbook — car wash marketing strategies and ideas by OptSpot.`}
+  ogImage={youtubeId ? undefined : '/cover-wide.jpg'}
+  canonicalPath={`/episodes/${episode.slug}/`}
+>
+  <Fragment slot="head">
+    {youtubeId && (
+      <meta property="og:image" content={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`} />
+    )}
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "PodcastEpisode",
+      "name": title,
+      "description": description,
+      "episodeNumber": episodeNumber,
+      "datePublished": date.toISOString().split('T')[0],
+      "url": `https://carwashgrowthplaybook.com/episodes/${episode.slug}/`,
+      "image": youtubeId
+        ? `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
+        : "https://carwashgrowthplaybook.com/cover-square.jpg",
+      "partOfSeries": {
+        "@type": "PodcastSeries",
+        "name": "The Car Wash Growth Playbook",
+        "url": "https://carwashgrowthplaybook.com"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Josh Taylor"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "OptSpot",
+        "url": "https://optspot.com"
+      },
+      ...(youtubeId && {
+        "associatedMedia": {
+          "@type": "VideoObject",
+          "embedUrl": `https://www.youtube.com/embed/${youtubeId}`,
+          "url": `https://www.youtube.com/watch?v=${youtubeId}`
+        }
+      })
+    })} />
+  </Fragment>
+  <Nav variant="episode" />
+
+  <!-- Episode Header: dark -->
+  <div class="pt-[52px] bg-[#0a2430]">
+    <div class="max-w-4xl mx-auto px-6 py-12">
+      <div class="flex items-center gap-3 mb-4 flex-wrap">
+        <span class="bg-[#e9e71e] text-[#0a2430] text-xs font-bold px-2.5 py-1 rounded tracking-wide">
+          EP {String(episodeNumber).padStart(3, '0')}
+        </span>
+        <time class="text-white/50 text-sm">{formattedDate}</time>
+        {duration && <span class="text-white/50 text-sm">{duration}</span>}
+      </div>
+
+      {guest && (
+        <p class="text-[#19c4d8] text-sm uppercase tracking-wider mb-2">Guest: {guest}</p>
+      )}
+
+      <h1 class="font-display text-4xl md:text-5xl tracking-wider text-white leading-tight mb-4">
+        {title.toUpperCase()}
+      </h1>
+      <p class="text-white/60 text-lg leading-relaxed max-w-2xl">{description}</p>
+    </div>
+  </div>
+
+  <!-- Player: light -->
+  <div class="bg-white border-b border-gray-200 py-8 px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="flex items-center gap-2 mb-5">
+        {youtubeId && (
+          <button
+            id="tab-youtube"
+            data-tab="youtube"
+            class="px-5 py-2 rounded-full text-sm font-semibold transition bg-[#19c4d8] text-white"
+          >
+            Watch on YouTube
+          </button>
+        )}
+        {spotifyEpisodeId && (
+          <button
+            id="tab-spotify"
+            data-tab="spotify"
+            class={`px-5 py-2 rounded-full text-sm font-semibold transition ${youtubeId ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-[#19c4d8] text-white'}`}
+          >
+            Listen on Spotify
+          </button>
+        )}
+      </div>
+
+      {youtubeId && (
+        <div id="player-youtube">
+          <div class="relative w-full rounded-xl overflow-hidden shadow-sm" style="padding-bottom: 56.25%;">
+            <iframe
+              class="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${youtubeId}`}
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+      )}
+
+      {spotifyEpisodeId && (
+        <div id="player-spotify" class={youtubeId ? 'hidden' : ''}>
+          <iframe
+            class="w-full rounded-xl block shadow-sm"
+            style="height: 232px;"
+            src={`https://open.spotify.com/embed/episode/${spotifyEpisodeId}?utm_source=generator`}
+            frameborder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          ></iframe>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- Show Notes: light -->
+  <main class="bg-white max-w-4xl mx-auto px-6 py-12">
+    <div
+      class="prose prose-lg max-w-none
+        prose-headings:font-bold prose-headings:text-[#0a2430] prose-headings:tracking-tight
+        prose-p:text-gray-600 prose-p:leading-relaxed
+        prose-a:text-[#19c4d8] prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-[#0a2430]
+        prose-li:text-gray-600
+        prose-hr:border-gray-200"
+    >
+      <Content />
+    </div>
+  </main>
+
+  <!-- Episode Navigation: light -->
+  <div class="bg-white max-w-4xl mx-auto px-6 pb-16">
+    <div class="border-t border-gray-200 pt-8 flex items-start justify-between gap-6">
+      {prevEpisode ? (
+        <a href={`/episodes/${prevEpisode.slug}`} class="group text-left max-w-xs">
+          <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Previous</p>
+          <p class="text-[#0a2430] text-sm font-medium group-hover:text-[#19c4d8] transition line-clamp-2">
+            &larr; {prevEpisode.data.title}
+          </p>
+        </a>
+      ) : <div />}
+      {nextEpisode ? (
+        <a href={`/episodes/${nextEpisode.slug}`} class="group text-right max-w-xs ml-auto">
+          <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Next</p>
+          <p class="text-[#0a2430] text-sm font-medium group-hover:text-[#19c4d8] transition line-clamp-2">
+            {nextEpisode.data.title} &rarr;
+          </p>
+        </a>
+      ) : <div />}
+    </div>
+  </div>
+
+  <!-- OptSpot CTA: dark -->
+  <section class="bg-[#0a2430] py-14 px-6">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
+      <div class="flex-1">
+        <p class="text-[#e9e71e] text-xs uppercase tracking-widest font-bold mb-2">Powered by OptSpot</p>
+        <p class="text-white font-bold text-lg mb-2">
+          Want to put these strategies to work?
+        </p>
+        <p class="text-white/50 text-sm leading-relaxed">
+          OptSpot is a full-service, done-with-you marketing agency built exclusively for car washes. We handle the strategy and execution so you can focus on running your business.
+        </p>
+      </div>
+      <a
+        href="https://optspot.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="shrink-0 inline-flex items-center gap-2 px-8 py-4 bg-[#e9e71e] text-[#0a2430] font-bold rounded-full hover:opacity-90 transition text-sm"
+      >
+        Visit OptSpot.com &rarr;
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-[#0a2430] border-t border-white/10 py-10 px-6 text-center">
+    <a href="/" class="inline-block mb-4">
+      <img src="/cover-square.jpg" alt="The Car Wash Growth Playbook" class="w-14 h-14 rounded-xl mx-auto" />
+    </a>
+    <p class="font-display text-base tracking-wider text-[#19c4d8]">THE CAR WASH GROWTH PLAYBOOK</p>
+    <p class="text-white/40 text-xs mt-1">An OptSpot Podcast</p>
+    <p class="text-white/20 text-xs mt-6">&copy; {new Date().getFullYear()} OptSpot. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const tabs = document.querySelectorAll<HTMLButtonElement>('[data-tab]');
+    const players: Record<string, HTMLElement | null> = {
+      youtube: document.getElementById('player-youtube'),
+      spotify: document.getElementById('player-spotify'),
+    };
+
+    tabs.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab as 'youtube' | 'spotify';
+
+        Object.entries(players).forEach(([key, el]) => {
+          if (key === tab) el?.classList.remove('hidden');
+          else el?.classList.add('hidden');
+        });
+
+        tabs.forEach((t) => {
+          if (t.dataset.tab === tab) {
+            t.classList.add('bg-[#19c4d8]', 'text-white');
+            t.classList.remove('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+          } else {
+            t.classList.remove('bg-[#19c4d8]', 'text-white');
+            t.classList.add('bg-gray-100', 'text-gray-600', 'hover:bg-gray-200');
+          }
+        });
+      });
+    });
+  </script>
+</Base>
