@@ -3,5 +3,6 @@ title: "What the Savannah Bananas Can Teach Car Wash Operators About Creating Fa
 episodeNumber: 28
 date: "2026-03-30"
 description: "What can a touring baseball entertainment brand teach car wash operators? More than you'd think. Josh shares lessons from the Savannah Bananas on building real fans."
+youtubeId: "eudv_l7Q0yI"
 spotifyEpisodeId: "1I9DmxzfIIWXNsgZ3boiTL"
 ---
